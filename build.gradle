@@ -1,0 +1,96 @@
+plugins {
+	id 'java'
+}
+
+repositories {
+	mavenLocal()
+	maven {
+		url = 'https://repo.runelite.net'
+		content {
+			includeGroupByRegex("net\\.runelite.*")
+		}
+	}
+	mavenCentral()
+}
+
+def runeLiteVersion = 'latest.release'
+def pluginMainClass = 'com.bardosrs.BardPluginTest'
+
+dependencies {
+	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
+
+	compileOnly 'org.projectlombok:lombok:1.18.30'
+	annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+	testImplementation 'junit:junit:4.12'
+	testImplementation group: 'net.runelite', name:'client', version: runeLiteVersion
+	testImplementation group: 'net.runelite', name:'jshell', version: runeLiteVersion
+}
+
+group = 'com.bardosrs'
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release.set(11)
+}
+
+tasks.register('run', JavaExec) {
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = pluginMainClass
+
+	jvmArgs "-ea"
+	// macOS: RuneLite's fullscreen adapter extends com.apple.eawt classes, which
+	// java.desktop does not export to the classpath by default.
+	if (System.getProperty('os.name').toLowerCase().contains('mac'))
+	{
+		jvmArgs "--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED"
+	}
+	args "--developer-mode", "--debug"
+}
+
+// Renders the chat panel offscreen to a PNG for visual review.
+// gradlew uiPreview -PpreviewOut=/path/to/panel.png
+tasks.register('uiPreview', JavaExec) {
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'com.bardosrs.UiPreview'
+	jvmArgs "-Djava.awt.headless=true"
+	if (project.hasProperty('previewOut')) {
+		args project.property('previewOut')
+	}
+}
+
+// Runs wiki tools against the live OSRS Wiki and prints the results (dev tool).
+// gradlew wikiLive -PliveCalls='wiki_search={"query":"glassblowing"}||wiki_page={"title":"Crafting"}'
+tasks.register('wikiLive', JavaExec) {
+	classpath = sourceSets.test.runtimeClasspath
+	mainClass = 'com.bardosrs.WikiLive'
+	if (project.hasProperty('liveCalls')) {
+		args project.property('liveCalls')
+	}
+}
+
+tasks.register('shadowJar', Jar) {
+	dependsOn configurations.testRuntimeClasspath
+	manifest {
+		attributes('Main-Class': pluginMainClass, 'Multi-Release': true)
+	}
+
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	from sourceSets.main.output
+	from sourceSets.test.output
+	from {
+		configurations.testRuntimeClasspath.collect { file ->
+			file.isDirectory() ? file : zipTree(file)
+		}
+	}
+
+	exclude 'META-INF/INDEX.LIST'
+	exclude 'META-INF/*.SF'
+	exclude 'META-INF/*.DSA'
+	exclude 'META-INF/*.RSA'
+	exclude '**/module-info.class'
+
+	group = BasePlugin.BUILD_GROUP
+	archiveClassifier.set('shadow')
+	archiveFileName.set("${rootProject.name}-${project.version}-all.jar")
+}
