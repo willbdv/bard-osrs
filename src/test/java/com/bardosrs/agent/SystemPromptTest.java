@@ -1,10 +1,12 @@
 package com.bardosrs.agent;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import com.bardosrs.tools.AgentTool;
 import com.bardosrs.tools.ToolRegistry;
 import com.bardosrs.goals.GoalStore;
+import com.bardosrs.state.AccountProfile;
 import com.bardosrs.state.FakeAccountSource;
 import com.bardosrs.state.FakeProfileStore;
 import com.bardosrs.tools.EditGoalTool;
@@ -36,6 +38,17 @@ public class SystemPromptTest
 			assertTrue(tool.name() + " is not mentioned in the system prompt", ChatSession.SYSTEM_PROMPT.contains(tool.name()));
 		}
 		assertTrue(new ToolRegistry(gson, wiki, new FakeAccountSource(), goals).specs().size() == 7);
+	}
+
+	@Test
+	public void toolNotesAreAppendedOnlyWhenThereAreSome()
+	{
+		AccountProfile profile = AccountProfile.notShared();
+		assertEquals(ChatSession.systemPrompt(profile), ChatSession.systemPrompt(profile, ""));
+		assertEquals(ChatSession.systemPrompt(profile), ChatSession.systemPrompt(profile, null));
+		String withNote = ChatSession.systemPrompt(profile, "The wiki is off.");
+		assertTrue(withNote.endsWith("\n\nThe wiki is off."));
+		assertTrue(withNote.startsWith(ChatSession.systemPrompt(profile)));
 	}
 
 	@Test

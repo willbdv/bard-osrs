@@ -20,6 +20,20 @@ public class WikiPageTool implements AgentTool
 	}
 
 	@Override
+	public boolean available()
+	{
+		return wiki.isEnabled();
+	}
+
+	@Override
+	public String unavailableNote()
+	{
+		return "Wiki lookups are switched off, so you cannot read the OSRS Wiki. Answer from your own knowledge, say "
+			+ "plainly when you are unsure or a detail may be out of date, and tell the player once that they can turn "
+			+ "on \"Look things up on the OSRS Wiki\" in Bard's settings for answers checked against the wiki.";
+	}
+
+	@Override
 	public String description()
 	{
 		return "Read an Old School RuneScape Wiki page (item, monster, quest, skill, guide) as text with tables kept "

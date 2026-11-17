@@ -22,4 +22,16 @@ public interface AgentTool
 
 	/** A short human-readable description of this call, shown in the chat panel. */
 	String summary(JsonObject arguments);
+
+	/** False while the player has this tool switched off; it is then not offered to the model. */
+	default boolean available()
+	{
+		return true;
+	}
+
+	/** For an unavailable tool: a line for the system prompt saying what to do without it. Null for none. */
+	default String unavailableNote()
+	{
+		return null;
+	}
 }

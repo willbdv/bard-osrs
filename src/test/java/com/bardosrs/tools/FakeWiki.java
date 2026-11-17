@@ -145,6 +145,12 @@ class FakeWiki implements AutoCloseable
 		return new WikiClient(new OkHttpClient(), GSON, "http://127.0.0.1:" + server.getAddress().getPort());
 	}
 
+	/** A client whose opt-in gate the test controls, like the player's "Look things up on the OSRS Wiki" setting. */
+	WikiClient client(java.util.function.BooleanSupplier enabled)
+	{
+		return new WikiClient(new OkHttpClient(), GSON, "http://127.0.0.1:" + server.getAddress().getPort(), enabled);
+	}
+
 	@Override
 	public void close()
 	{

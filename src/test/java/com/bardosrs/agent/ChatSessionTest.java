@@ -299,6 +299,45 @@ public class ChatSessionTest
 		}
 	}
 
+	/** A tool the player has switched off is not offered, and the model is told what to do without it. */
+	@Test
+	public void switchedOffToolsAreNotOfferedAndTheModelIsTold() throws Exception
+	{
+		AgentTool off = new XpCalculatorTool()
+		{
+			@Override
+			public String name()
+			{
+				return "wiki_page";
+			}
+
+			@Override
+			public boolean available()
+			{
+				return false;
+			}
+
+			@Override
+			public String unavailableNote()
+			{
+				return "WIKI IS OFF NOTE";
+			}
+		};
+		ChatSession session = session("m", new ToolRegistry(GSON, Arrays.<AgentTool>asList(new XpCalculatorTool(), off)));
+		RecordingView view = new RecordingView();
+
+		responseBody = sse("ok");
+		assertTrue(session.send("hello", view));
+		view.awaitFinished();
+
+		JsonObject request = requests.get(0);
+		JsonArray tools = request.getAsJsonArray("tools");
+		assertEquals(1, tools.size());
+		assertEquals("xp_calculator", tools.get(0).getAsJsonObject().getAsJsonObject("function").get("name").getAsString());
+		String system = request.getAsJsonArray("messages").get(0).getAsJsonObject().get("content").getAsString();
+		assertTrue(system, system.endsWith("WIKI IS OFF NOTE"));
+	}
+
 	@Test
 	public void runsToolsAndFeedsTheResultsBack() throws Exception
 	{

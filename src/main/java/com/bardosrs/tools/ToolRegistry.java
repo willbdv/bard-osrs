@@ -50,6 +50,10 @@ public class ToolRegistry
 		JsonArray specs = new JsonArray();
 		for (AgentTool tool : tools.values())
 		{
+			if (!tool.available())
+			{
+				continue;
+			}
 			JsonObject function = new JsonObject();
 			function.addProperty("name", tool.name());
 			function.addProperty("description", tool.description());
@@ -60,6 +64,21 @@ public class ToolRegistry
 			specs.add(spec);
 		}
 		return specs;
+	}
+
+	/** Lines for the system prompt about tools the player has switched off, or an empty string. */
+	public String unavailableNotes()
+	{
+		StringBuilder notes = new StringBuilder();
+		for (AgentTool tool : tools.values())
+		{
+			String note = tool.available() ? null : tool.unavailableNote();
+			if (note != null && !note.isEmpty())
+			{
+				notes.append(notes.length() == 0 ? "" : "\n").append(note);
+			}
+		}
+		return notes.toString();
 	}
 
 	/** A short description of a call for the chat panel. */

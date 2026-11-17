@@ -24,6 +24,12 @@ public class WikiSearchTool implements AgentTool
 	}
 
 	@Override
+	public boolean available()
+	{
+		return wiki.isEnabled();
+	}
+
+	@Override
 	public String description()
 	{
 		return "Search the Old School RuneScape Wiki for pages. Returns page titles with short snippets only; "

@@ -241,14 +241,21 @@ public class ChatSession
 
 	static String systemPrompt(AccountProfile profile)
 	{
-		return SYSTEM_PROMPT + "\n\n" + profile.promptSection();
+		return systemPrompt(profile, "");
+	}
+
+	/** {@code toolNotes} says what to do without tools the player has switched off, and is empty when none are. */
+	static String systemPrompt(AccountProfile profile, String toolNotes)
+	{
+		String prompt = SYSTEM_PROMPT + "\n\n" + profile.promptSection();
+		return toolNotes == null || toolNotes.isEmpty() ? prompt : prompt + "\n\n" + toolNotes;
 	}
 
 	/** Sends the history to the model. Callers hold the lock. */
 	private void requestModel(LlmClient.Settings settings, int gen, View view)
 	{
 		List<JsonObject> request = new ArrayList<>();
-		request.add(message("system", systemPrompt(turnProfile)));
+		request.add(message("system", systemPrompt(turnProfile, tools.unavailableNotes())));
 		request.addAll(history);
 
 		// Once the tool budget is spent, keep the tools listed but forbid calling them and ask for the answer.

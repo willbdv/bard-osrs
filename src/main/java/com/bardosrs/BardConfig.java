@@ -107,4 +107,27 @@ public interface BardConfig extends Config
 	{
 		return AccountBuild.AUTO;
 	}
+
+	@ConfigSection(
+		name = "Lookups",
+		description = "Where Bard may look things up",
+		position = 2
+	)
+	String lookupsSection = "lookups";
+
+	@ConfigItem(
+		keyName = "useWiki",
+		name = "Look things up on the OSRS Wiki",
+		description = "Lets Bard search and read pages on oldschool.runescape.wiki to check its answers. Only the search "
+			+ "words and page titles are sent, never account data. Without it Bard answers from the model's own "
+			+ "knowledge, which can be out of date.",
+		warning = "This feature submits your IP address to a 3rd-party server not controlled or verified by RuneLite "
+			+ "developers. It sends the search words and page titles Bard looks up to oldschool.runescape.wiki.",
+		section = lookupsSection,
+		position = 0
+	)
+	default boolean useWiki()
+	{
+		return false;
+	}
 }

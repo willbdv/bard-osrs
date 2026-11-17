@@ -46,8 +46,9 @@ import net.runelite.client.ui.PluginPanel;
 public class ChatPanel extends PluginPanel implements ChatSession.View
 {
 	private static final String INTRO =
-		"Ask Bard about OSRS. This is an early build. Bard can look things up on the OSRS Wiki and has an XP "
-			+ "calculator. To let it see your account type, stats and quests, turn on \"Share account data with the "
+		"Ask Bard about OSRS. This is an early build. For answers checked against the OSRS Wiki, turn on "
+			+ "\"Look things up on the OSRS Wiki\" in its settings. Bard also has an XP calculator. To let it see "
+			+ "your account type, stats and quests, turn on \"Share account data with the "
 			+ "model\" in its settings. To include your bank, inventory and equipment, also turn on \"Also share "
 			+ "bank, inventory and equipment\", then open your bank once. Ask Bard to set a goal, and track it in "
 			+ "the Goals tab.";

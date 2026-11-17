@@ -1,5 +1,6 @@
 package com.bardosrs.tools;
 
+import com.bardosrs.BardConfig;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.extern.slf4j.Slf4j;
@@ -108,6 +110,7 @@ public class WikiClient
 	private final OkHttpClient http;
 	private final Gson gson;
 	private final String baseUrl;
+	private final BooleanSupplier enabled;
 	private final Map<String, CacheEntry> cache = new LinkedHashMap<String, CacheEntry>(16, 0.75f, true)
 	{
 		@Override
@@ -117,21 +120,50 @@ public class WikiClient
 		}
 	};
 
+	/** The plugin's client: it only contacts the wiki while the player has turned wiki lookups on. */
 	@Inject
+	public WikiClient(OkHttpClient okHttpClient, Gson gson, BardConfig config)
+	{
+		this(okHttpClient, gson, DEFAULT_BASE_URL, config::useWiki);
+	}
+
+	/** Always on, with no opt-in gate: for tests and developer tools only. */
 	public WikiClient(OkHttpClient okHttpClient, Gson gson)
 	{
-		this(okHttpClient, gson, DEFAULT_BASE_URL);
+		this(okHttpClient, gson, DEFAULT_BASE_URL, () -> true);
 	}
 
 	WikiClient(OkHttpClient okHttpClient, Gson gson, String baseUrl)
 	{
+		this(okHttpClient, gson, baseUrl, () -> true);
+	}
+
+	WikiClient(OkHttpClient okHttpClient, Gson gson, String baseUrl, BooleanSupplier enabled)
+	{
 		this.http = okHttpClient.newBuilder().callTimeout(15, TimeUnit.SECONDS).build();
 		this.gson = gson;
 		this.baseUrl = baseUrl;
+		this.enabled = enabled;
+	}
+
+	/** Whether the player has allowed lookups on the OSRS Wiki. Nothing is sent to the wiki while this is false. */
+	public boolean isEnabled()
+	{
+		return enabled.getAsBoolean();
+	}
+
+	private void requireEnabled()
+	{
+		if (!isEnabled())
+		{
+			throw new ToolException("Wiki lookups are turned off. The player can turn on \"Look things up on the "
+				+ "OSRS Wiki\" in Bard's settings.");
+		}
 	}
 
 	public List<SearchHit> search(String query)
 	{
+		requireEnabled();
 		JsonObject json = get(api()
 			.addQueryParameter("action", "query")
 			.addQueryParameter("list", "search")
@@ -170,6 +202,7 @@ public class WikiClient
 	 */
 	public Page page(String title, String section)
 	{
+		requireEnabled();
 		boolean explicit = section != null && !section.trim().isEmpty();
 		JsonObject meta = parse(title, explicit ? "sections" : "text|sections", null);
 
