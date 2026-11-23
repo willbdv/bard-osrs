@@ -34,4 +34,10 @@ public interface AgentTool
 	{
 		return null;
 	}
+
+	/** For an unavailable tool: a line for the player saying how to switch it on. Null for none. */
+	default String unavailableHint()
+	{
+		return null;
+	}
 }

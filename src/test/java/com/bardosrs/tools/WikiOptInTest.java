@@ -104,11 +104,22 @@ public class WikiOptInTest
 	public void thePromptTellsTheModelWhatToDoWithoutTheWiki()
 	{
 		String notes = registry.unavailableNotes();
-		assertTrue(notes, notes.contains("Look things up on the OSRS Wiki"));
 		assertTrue(notes, notes.contains("your own knowledge"));
+		assertFalse("the panel tells the player how to enable it, not the model", notes.contains("Bard's settings"));
 
 		enabled.set(true);
 		assertEquals("", registry.unavailableNotes());
+	}
+
+	@Test
+	public void thePlayerIsToldHowToTurnTheWikiOn()
+	{
+		String hint = registry.unavailableHints();
+		assertTrue(hint, hint.contains("Look things up on the OSRS Wiki"));
+		assertTrue(hint, hint.contains("Bard's settings"));
+
+		enabled.set(true);
+		assertEquals("", registry.unavailableHints());
 	}
 
 	@Test

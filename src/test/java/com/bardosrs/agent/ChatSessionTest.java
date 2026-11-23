@@ -338,6 +338,87 @@ public class ChatSessionTest
 		assertTrue(system, system.endsWith("WIKI IS OFF NOTE"));
 	}
 
+	private static AgentTool switchedOff(String hint)
+	{
+		return new XpCalculatorTool()
+		{
+			@Override
+			public String name()
+			{
+				return "wiki_page";
+			}
+
+			@Override
+			public boolean available()
+			{
+				return false;
+			}
+
+			@Override
+			public String unavailableHint()
+			{
+				return hint;
+			}
+		};
+	}
+
+	private static long hints(RecordingView view, String hint)
+	{
+		return view.events.stream().filter(e -> e.equals("notice:" + hint)).count();
+	}
+
+	/** The busy flag clears just before the answer's last callbacks; taking the session's lock waits for them. */
+	private static void settle(ChatSession session)
+	{
+		synchronized (session)
+		{
+		}
+	}
+
+	/** The panel, not the model, tells the player how to switch a tool on: after the first answer, once per chat. */
+	@Test
+	public void tellsThePlayerOncePerChatHowToSwitchAToolOn() throws Exception
+	{
+		ChatSession session = session("m", new ToolRegistry(GSON,
+			Arrays.<AgentTool>asList(new XpCalculatorTool(), switchedOff("WIKI HINT"))));
+		RecordingView view = new RecordingView();
+
+		responseBody = sse("one");
+		assertTrue(session.send("first", view));
+		view.awaitFinished();
+		settle(session);
+		assertEquals(1, hints(view, "WIKI HINT"));
+		int done = view.events.indexOf("done");
+		assertEquals("the hint follows the answer", "notice:WIKI HINT", view.events.get(done + 1));
+
+		responseBody = sse("two");
+		assertTrue(session.send("second", view));
+		view.awaitFinished();
+		settle(session);
+		assertEquals("one hint per chat is enough", 1, hints(view, "WIKI HINT"));
+
+		session.clear(view);
+		view.awaitFinished(); // clearing reports "not busy", which trips the latch; reset it before the next question
+		responseBody = sse("three");
+		assertTrue(session.send("fresh chat", view));
+		view.awaitFinished();
+		settle(session);
+		assertEquals("a cleared chat starts over", 2, hints(view, "WIKI HINT"));
+	}
+
+	@Test
+	public void saysNothingWhenEveryToolIsOn() throws Exception
+	{
+		ChatSession session = session("m");
+		RecordingView view = new RecordingView();
+
+		responseBody = sse("answer");
+		assertTrue(session.send("hello", view));
+		view.awaitFinished();
+		settle(session);
+		assertTrue(view.events.toString(), view.events.stream().noneMatch(e -> e.startsWith("notice:")));
+	}
+
 	@Test
 	public void runsToolsAndFeedsTheResultsBack() throws Exception
 	{

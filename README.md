@@ -58,7 +58,8 @@ calls per question). Tools live in `com.bardosrs.tools`; add one by implementing
 Wiki lookups are **off by default**: turn on **Look things up on the OSRS Wiki**
 in Bard's settings (RuneLite shows a warning first). While it is off, Bard is not
 offered these tools, makes no request to the wiki, and answers from the model's own
-knowledge, telling you it may be out of date. When on, the tools call the public
+knowledge, telling you it may be out of date. After the first answer in a chat the
+panel adds one grey line saying how to turn lookups on. When on, the tools call the public
 MediaWiki API at `oldschool.runescape.wiki` over HTTPS and send only the search
 words or page title: no account data. Responses are cached
 for 15 minutes. Wiki text is available under CC BY-NC-SA 3.0, and answers are

@@ -122,6 +122,8 @@ public class ChatSession
 	private int turnStart;
 	private int toolRounds;
 	private int toolCallCount;
+	/** Whether this chat has already told the player about a tool they have switched off; once per chat is enough. */
+	private boolean switchedOffHintShown;
 	/** The account as read when the current question was asked; the same snapshot is used for every round. */
 	private AccountProfile turnProfile = AccountProfile.notShared();
 
@@ -192,6 +194,7 @@ public class ChatSession
 		generation++;
 		cancelInFlight();
 		history.clear();
+		switchedOffHintShown = false;
 		busy = false;
 		view.onBusyChanged(false);
 	}
@@ -201,6 +204,7 @@ public class ChatSession
 		generation++;
 		cancelInFlight();
 		history.clear();
+		switchedOffHintShown = false;
 		busy = false;
 	}
 
@@ -344,6 +348,25 @@ public class ChatSession
 		history.add(message("assistant", reply.text));
 		finish(view);
 		view.onAssistantDone();
+		hintAboutSwitchedOffTools(view);
+	}
+
+	/**
+	 * After the first answer in a chat, says how to turn on a tool the player has switched off (the OSRS Wiki). The panel
+	 * says it, not the model, so it is shown reliably, and only once. Callers hold the lock.
+	 */
+	private void hintAboutSwitchedOffTools(View view)
+	{
+		if (switchedOffHintShown)
+		{
+			return;
+		}
+		String hint = tools.unavailableHints();
+		if (!hint.isEmpty())
+		{
+			switchedOffHintShown = true;
+			view.onNotice(hint);
+		}
 	}
 
 	/** Runs the model's tool calls on a worker thread, then sends the results back, unless the turn was stopped. */

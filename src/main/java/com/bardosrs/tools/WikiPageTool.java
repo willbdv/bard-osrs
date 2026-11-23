@@ -28,9 +28,16 @@ public class WikiPageTool implements AgentTool
 	@Override
 	public String unavailableNote()
 	{
-		return "Wiki lookups are switched off, so you cannot read the OSRS Wiki. Answer from your own knowledge, say "
-			+ "plainly when you are unsure or a detail may be out of date, and tell the player once that they can turn "
-			+ "on \"Look things up on the OSRS Wiki\" in Bard's settings for answers checked against the wiki.";
+		return "Wiki lookups are switched off, so you cannot read the OSRS Wiki. Answer from your own knowledge and say "
+			+ "plainly when you are unsure or a detail may be out of date. Do not explain how to turn lookups on: the "
+			+ "panel already tells the player.";
+	}
+
+	@Override
+	public String unavailableHint()
+	{
+		return "Wiki lookups are off. Turn on \"Look things up on the OSRS Wiki\" in Bard's settings for answers "
+			+ "checked against the wiki.";
 	}
 
 	@Override

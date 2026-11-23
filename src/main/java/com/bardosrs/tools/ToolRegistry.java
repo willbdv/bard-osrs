@@ -81,6 +81,21 @@ public class ToolRegistry
 		return notes.toString();
 	}
 
+	/** What to tell the player about tools they have switched off (how to turn them on), or an empty string. */
+	public String unavailableHints()
+	{
+		StringBuilder hints = new StringBuilder();
+		for (AgentTool tool : tools.values())
+		{
+			String hint = tool.available() ? null : tool.unavailableHint();
+			if (hint != null && !hint.isEmpty())
+			{
+				hints.append(hints.length() == 0 ? "" : " ").append(hint);
+			}
+		}
+		return hints.toString();
+	}
+
 	/** A short description of a call for the chat panel. */
 	public String summary(String name, String argumentsJson)
 	{
