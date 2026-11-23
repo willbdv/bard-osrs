@@ -40,6 +40,15 @@ public class SystemPromptTest
 		assertTrue(new ToolRegistry(gson, wiki, new FakeAccountSource(), goals).specs().size() == 7);
 	}
 
+	/** The Plugin Hub bans combat prayer recommendations and attack prediction, so the model is told to stay out. */
+	@Test
+	public void staysOutOfBossPrayerAndAttackAdvice()
+	{
+		String prompt = ChatSession.SYSTEM_PROMPT;
+		assertTrue(prompt.contains("do not give prayer-switching or attack-timing guidance"));
+		assertTrue(prompt.contains("do not predict a boss's next attack"));
+	}
+
 	@Test
 	public void toolNotesAreAppendedOnlyWhenThereAreSome()
 	{

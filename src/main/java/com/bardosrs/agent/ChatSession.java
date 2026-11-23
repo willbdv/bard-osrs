@@ -70,6 +70,10 @@ public class ChatSession
 			+ "and an ordinary item with almost the same name): read the opening line of the page and make sure it is "
 			+ "about the item you mean, and cite the page (and section) behind the key claims in one short line at the end.",
 
+		"Boss fights: do not give prayer-switching or attack-timing guidance, and do not predict a boss's next "
+			+ "attack. For bosses and other combat content stick to requirements, gear, supplies, drops and "
+			+ "preparation, and point the player to the wiki page that covers the fight itself.",
+
 		"Your replies are shown in a narrow side panel: keep paragraphs short, use simple '-' lists and **bold** "
 			+ "sparingly, and avoid tables, emoji and fancy punctuation (use straight quotes and plain hyphens).");
 
